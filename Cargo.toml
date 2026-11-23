@@ -1,0 +1,36 @@
+[package]
+name = "userspace-tcpip"
+version = "0.1.0"
+edition = "2021"
+authors = ["Geraliza Castlevania <catalog@example.com>"]
+description = "Stack TCP/IP no user-space: Ethernet/ARP/IPv4/ICMP/UDP + TCP subset (SYN/ACK/dados) sobre NIC em memória ou TUN (catálogo 3.2)"
+license = "MIT"
+readme = "README.md"
+keywords = ["tcpip", "userspace", "tun", "networking", "icmp"]
+categories = ["network-programming", "simulation"]
+
+[features]
+default = []
+# Abre /dev/net/tun — exige CAP_NET_ADMIN ou root. Testes do host NÃO usam esta feature.
+tun = ["dep:libc"]
+
+[dependencies]
+thiserror = "1"
+parking_lot = "0.12"
+libc = { version = "0.2", optional = true }
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[[example]]
+name = "ping_memory"
+path = "examples/ping_memory.rs"
+
+[[example]]
+name = "udp_echo"
+path = "examples/udp_echo.rs"
+
+[[example]]
+name = "tcp_echo"
+path = "examples/tcp_echo.rs"
