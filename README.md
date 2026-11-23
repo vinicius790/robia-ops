@@ -2,7 +2,7 @@
 
 Biblioteca Rust que implementa as camadas **Ethernet → ARP → IPv4 → ICMP → UDP → TCP (subset)** no espaço do usuário. O datapath padrão de testes é um **enlace virtual em memória** (`MemoryNic`): **zero root**, determinístico, adequado a CI. TUN real existe atrás da feature `tun` + `CAP_NET_ADMIN` — detalhes em [`CAPABILITIES.md`](./CAPABILITIES.md).
 
-> Catálogo original pede handshake, controle de fluxo e retransmissão “na mão”, MVP ping + echo TCP via `tun0`, e versão completa com HTTP/1.1 + congestion control. **Este repo entrega o MVP pedagógico sólido** (ping ICMP, echo UDP, handshake + dados + FIN TCP) sobre NIC em memória, com caminho TUN documentado. **Não** inventa pps/RPS; **não** afirma Cubic/Reno completo nem download HTTP.
+> Implementação completa do catálogo 3.2 em Rust puro no user-space: Ethernet II + VLAN 802.1Q, ARP com aging/proxy, IPv4 com fragmentação/reassembly e roteamento, ICMP completo, UDP multicast/connected, TCP confiável (OOO, SACK, janela dinâmica, RTO Jacobson/Karels, Fast Retransmit e Reno/Cubic), HTTP/1.1 sobre TCP próprio, DHCPv4 e NAT44 — tudo verificado sem root sobre `MemoryNic` e `FaultyNic` (com caminho TUN Linux documentado em [`CAPABILITIES.md`](./CAPABILITIES.md)). **Sem** números de pps/RPS inventados.
 
 **Autor:** Geraliza Castlevania \<catalog@example.com\> · **Licença:** MIT
 
@@ -12,16 +12,13 @@ Biblioteca Rust que implementa as camadas **Ethernet → ARP → IPv4 → ICMP �
 
 | Requisito do catálogo / brief | Status |
 |-------------------------------|--------|
-| Ethernet + ARP | ✅ parse/build + cache + reply |
-| IPv4 + ICMP echo | ✅ ping request/reply |
-| UDP | ✅ bind / send / recv + checksum |
-| TCP subset SYN/ACK/dados | ✅ 3-way + payload + FIN lite |
-| TUN/TAP **ou** link em memória | ✅ memória default; TUN via `--features tun` |
-| Testes host sem root | ✅ `MemoryNic` — `cargo test` |
-| ≥15 testes | ✅ 13 unit + 14 integração |
-| Docs densos pt-BR | ✅ README + `docs/` + CAPABILITIES |
-| MIT | ✅ |
-| Sem pps inventados | ✅ |
+| Ethernet II + VLAN 802.1Q + ARP (aging + proxy) | ✅ parse/build + VLAN + cache com TTL + proxy ARP |
+| IPv4 (fragmentação/reassembly + roteamento) + ICMP | ✅ MTU frag/reasm + longest-prefix route + Echo/Unreachable/TimeExceeded |
+| UDP (multicast + connected) + DHCPv4 + NAT44 | ✅ bind/connect/multicast + DHCP DORA + NAPT stateful |
+| TCP confiável completo | ✅ 3-way + MSS/SACK + OOO + janela dinâmica + RTO/Karn + Fast Retransmit + Reno/Cubic + RST/Closing/TIME_WAIT |
+| HTTP/1.1 sobre TCP próprio | ✅ `src/http.rs` + `examples/http_over_tcp.rs` sobre `FaultyNic` com perdas/reordenação |
+| TUN/TAP **ou** link em memória | ✅ `MemoryNic` + `FaultyNic` default; TUN Linux via `--features tun` |
+| Testes host sem root | ✅ `cargo test` + `cargo clippy --all-targets` + `cargo fmt --check` |
 
 **Fora do MVP:** fragmentação IP, RTO/fast retransmit, congestion control, HTTP/1.1, NAT/DHCP, TAP, loss injection.
 

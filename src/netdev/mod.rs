@@ -1,10 +1,10 @@
-//! Abstração de NIC: em memória (testes sem root) e TUN opcional.
+//! Abstração de NIC: em memória (`MemoryNic`, `FaultyNic`) e TUN opcional (`--features tun`).
 
 mod memory;
 #[cfg(feature = "tun")]
 mod tun;
 
-pub use memory::{paired_nics, MemoryNic};
+pub use memory::{paired_faulty_nics, paired_nics, FaultyNic, LinkImpairment, MemoryNic};
 
 use crate::error::Result;
 

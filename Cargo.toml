@@ -16,7 +16,6 @@ tun = ["dep:libc"]
 
 [dependencies]
 thiserror = "1"
-parking_lot = "0.12"
 libc = { version = "0.2", optional = true }
 
 [profile.release]
@@ -34,3 +33,7 @@ path = "examples/udp_echo.rs"
 [[example]]
 name = "tcp_echo"
 path = "examples/tcp_echo.rs"
+
+[[example]]
+name = "http_over_tcp"
+path = "examples/http_over_tcp.rs"

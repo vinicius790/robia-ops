@@ -9,11 +9,11 @@ pub fn internet_checksum(data: &[u8]) -> u16 {
 /// pseudo-header UDP/TCP: some o pseudo-header e depois o segmento).
 pub fn internet_checksum_with_seed(data: &[u8], seed: u32) -> u16 {
     let mut sum: u32 = seed;
-    let mut chunks = data.chunks_exact(2);
-    for c in chunks.by_ref() {
-        sum += u16::from_be_bytes([c[0], c[1]]) as u32;
+    let (chunks, remainder) = data.as_chunks::<2>();
+    for c in chunks {
+        sum += u16::from_be_bytes(*c) as u32;
     }
-    if let Some(&b) = chunks.remainder().first() {
+    if let Some(&b) = remainder.first() {
         sum += u16::from_be_bytes([b, 0]) as u32;
     }
     while sum > 0xffff {
